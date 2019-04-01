@@ -1,0 +1,15 @@
+{
+  "name": "gglhashcode",
+  "version": "1.0.0",
+  "description": "RP 2019 project from google hashcode",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "googleHashcode2019"
+  },
+  "author": "sylvain senechal",
+  "license": "ISC"
+}
