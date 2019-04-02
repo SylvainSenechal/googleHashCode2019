@@ -14,19 +14,18 @@ const getFile = name => {
       vignetteOrder: 0
     }))
 }
-
 // TODO: voir si il faut math.floor percent
 const getNPictures = (data, percent) => data.slice(0, data.length*percent)
 const dataVertical = data => data.filter( picture => picture.type === "V")
 const dataHorizont = data => data.filter( picture => picture.type === "H")
 
-let data = getFile("a_example.txt")
+// let data = getFile("a_example.txt")
+let data = getFile("c_memorable_moments.txt")
 let dataV = dataVertical(data)
 let dataH = dataHorizont(data)
 let data3 = getNPictures(data, 0.49)
-// console.log(data)
-// console.log(data3)
 
-const linearHV = data => {
 
-}
+const linearPresentationHV = data => dataVertical(data).concat(dataHorizont(data))
+
+console.log(linearPresentationHV(data))
