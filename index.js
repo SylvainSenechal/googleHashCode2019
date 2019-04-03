@@ -16,19 +16,19 @@ const getFile = name => {
 }
 // TODO: voir si il faut math.floor percent
 const getNPicture = (data, percent) => data.slice(0, data.length*percent)
+// TODO: tester spread operator sur data voir si en modifiant data de base le result de filter est aussi modifie
 const getVertical = data => data.filter( picture => picture.type === "V")
 const getHorizont = data => data.filter( picture => picture.type === "H")
 
 const linearPresentationHV = data =>
   getVertical(data).length % 2 === 0 ?
-    getHorizont(data).concat(getVertical(data)) :                                     // Si vertical pair : pas de probleme
-    getHorizont(data).concat(getVertical(data).splice(0, getVertical(data).length-1)) // Si vertical impaire on vire le dernier vertical
+    [...getHorizont(data), ...getVertical(data)] :                                     // Si vertical pair : pas de probleme
+    [...getHorizont(data), ...getVertical(data).splice(0, getVertical(data).length-1)] // Si vertical impaire on vire le dernier vertical
 
 
-const presentationFromData = (data, presentationName = "presentation") => {
+const writePresentation = (data, presentationName = "presentation") => {
   fs.writeFileSync(`${presentationName}.txt`, "", err => err ? console.error(err) : console.log("Clear successfull")) // Clear last file
 
-  // vignette vert = [1, 2] / if 2 append et vider
   // TODO: ne pas utiliser un tableau puisque une seule valeur max stockee dedans
   // TODO: utiliser template literals pour concatenation des orders vignettes
   let nextVignette = []
@@ -46,15 +46,50 @@ const presentationFromData = (data, presentationName = "presentation") => {
   })
 }
 
+const compactVerticalVignette = presentation => {
+  return presentation.reduce( (acc, vignette) => {
+    if (vignette.type === "H") return {vertical: false, result: [...acc.result, vignette.features]}
+    else if (vignette.type === "V" && !acc.vertical){
+      return {vertical: true, result: [...acc.result, vignette.features]}
+    }
+    else if (vignette.type === "V" && acc.vertical) {
+
+      // console.log( [...new Set([...acc.result[acc.result.length-1], ...vignette.features])] )
+
+      acc.result[acc.result.length-1] = [...new Set([...acc.result[acc.result.length-1], ...vignette.features])]
+      return {vertical: false, result: acc.result}
+    }
+
+    // return acc.vertical ?
+    // {vertical: acc.vertical, result: [...acc.result, vignette.features]} :
+    // {vertical: acc.vertical, result: [...acc.result, vignette.features]}
+  }, {vertical: false, result: []})
+}
 
 
-// let data = getFile("a_example.txt")
-let data = getFile("c_memorable_moments.txt")
+const evaluatePresentation = data => {
+}
+
+
+let data = getFile("a_example.txt")
+// let data = getFile("c_memorable_moments.txt")
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
 let data3 = getNPicture(data, 0.49)
 let linear = linearPresentationHV(data)
-presentationFromData(linear)
+// console.log(linear)
+writePresentation(linear)
+evaluatePresentation(linear)
 
-console.log(data[0])
-console.log(data[5])
+
+let res = compactVerticalVignette(linear).result
+console.log(res)
+// let arr1 = [1,2,3,4,5];
+// let arr2 = [3,4,5,6];
+// let result = [...new Set([...arr1, ...arr2])];
+
+
+// presentation.reduce( (acc, vignette) => {
+//   {vertical: acc.vertical, result: [...acc.result, vignette.features]},
+//   {vertical: false, result: []})
+// }
