@@ -50,21 +50,18 @@ const writePresentation = (data, presentationName = "presentation") => {
 // TODO: remove if pour ternaire
 const compactVerticalVignette = presentation => {
   return presentation.reduce( (acc, vignette) => {
-    if (vignette.type === "H") return {vertical: false, result: [...acc.result, vignette.features]}
-    else if (vignette.type === "V" && !acc.vertical){
-      return {vertical: true, result: [...acc.result, vignette.features]}
+    if (vignette.type === "H") { // vignette horizontale
+      acc.result.push(vignette.features)
     }
-    else if (vignette.type === "V" && acc.vertical) {
-
-      // console.log( [...new Set([...acc.result[acc.result.length-1], ...vignette.features])] )
-
+    else if (vignette.type === "V" && !acc.vertical){ // premiere vignette verticale
+      acc.result.push(vignette.features)
+      acc.vertical = true
+    }
+    else { // seconde vignette verticale qu on compacte
       acc.result[acc.result.length-1] = [...new Set([...acc.result[acc.result.length-1], ...vignette.features])]
-      return {vertical: false, result: acc.result}
+      acc.vertical = false
     }
-
-    // return acc.vertical ?
-    // {vertical: acc.vertical, result: [...acc.result, vignette.features]} :
-    // {vertical: acc.vertical, result: [...acc.result, vignette.features]}
+    return acc
   }, {vertical: false, result: []}).result
 }
 
@@ -74,23 +71,24 @@ const scorePresentation = presentation => {
     let intersection = features.filter(x => acc.lastFeatures.includes(x)).length
     let diff1 = features.filter(x => !acc.lastFeatures.includes(x)).length
     let diff2 = acc.lastFeatures.filter(x => !features.includes(x)).length
-    // console.log(intersection, diff1, diff2)
-    // console.log(Math.min(intersection, Math.min(diff1, diff2)))
+
     return {score: acc.score + Math.min(intersection, Math.min(diff1, diff2)), lastFeatures: features}
   }, {score: 0, lastFeatures: []}).score
 }
 
 // let data = getFile("a_example.txt")
 // let data = getFile("c_memorable_moments.txt")
-let data = getFile("b_lovely_landscapes.txt")
-// let data = getFile("d_pet_pictures.txt")
+// let data = getFile("b_lovely_landscapes.txt")
+let data = getFile("d_pet_pictures.txt")
+// let data = getFile("e_shiny_selfies.txt")
 let start = new Date()
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
-let dataPercent = getNPicture(data, 0.3)
+let dataPercent = getNPicture(data, 1)
 let linear = linearPresentationHV(dataPercent)
 // writePresentation(linear)
 let linearCompact = compactVerticalVignette(linear)
+// console.log(linearCompact)
 console.log(scorePresentation(linearCompact))
 
 
