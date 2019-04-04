@@ -65,31 +65,51 @@ const compactVerticalVignette = presentation => {
   }, {vertical: false, result: []}).result
 }
 
-
+const transitionQuality = (slide1, slide2) => {
+  let intersection = slide1.filter(x => slide2.includes(x)).length
+  let diff1 = slide1.filter(x => !slide2.includes(x)).length
+  let diff2 = slide2.filter(x => !slide1.includes(x)).length
+  return Math.min(intersection, Math.min(diff1, diff2))
+}
 const scorePresentation = presentation => {
   return presentation.reduce( (acc, features) => {
-    let intersection = features.filter(x => acc.lastFeatures.includes(x)).length
-    let diff1 = features.filter(x => !acc.lastFeatures.includes(x)).length
-    let diff2 = acc.lastFeatures.filter(x => !features.includes(x)).length
-
-    return {score: acc.score + Math.min(intersection, Math.min(diff1, diff2)), lastFeatures: features}
+    return {score: acc.score + transitionQuality(features, acc.lastFeatures), lastFeatures: features}
   }, {score: 0, lastFeatures: []}).score
 }
 
-// let data = getFile("a_example.txt")
+const gloutonnePresentation = data => {
+  let result = [data.shift()]
+  while (data.length > 0) {
+    if (result[result.length-1].type === "H"){ // pas besoin de check H V, juste prendre soit 1 h soit 2 v
+
+    }
+    else { // chercher double v, faire attention si y a nb impaire de v a la fin
+
+    }
+    console.log(result[result.length-1])
+    data.shift()
+  }
+}
+
+let start = new Date()
+// DATA :
+let data = getFile("a_example.txt")
 // let data = getFile("c_memorable_moments.txt")
 // let data = getFile("b_lovely_landscapes.txt")
-let data = getFile("d_pet_pictures.txt")
+// let data = getFile("d_pet_pictures.txt")
 // let data = getFile("e_shiny_selfies.txt")
-let start = new Date()
+
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
 let dataPercent = getNPicture(data, 1)
-let linear = linearPresentationHV(dataPercent)
-// writePresentation(linear)
-let linearCompact = compactVerticalVignette(linear)
-// console.log(linearCompact)
-console.log(scorePresentation(linearCompact))
 
+// Linear basic presentation
+// let linear = linearPresentationHV(dataPercent)
+// // writePresentation(linear)
+// let linearCompact = compactVerticalVignette(linear)
+// console.log(scorePresentation(linearCompact))
+
+// gloutonnePresentation :
+let gloutonne = gloutonnePresentation(data)
 
 console.log(new Date() - start, "ms runtime")
