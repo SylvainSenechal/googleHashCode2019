@@ -28,6 +28,7 @@ const linearPresentationHV = data =>
 
 const writePresentation = (data, presentationName = "presentation") => {
   fs.writeFileSync(`${presentationName}.txt`, "", err => err ? console.error(err) : console.log("Clear successfull")) // Clear last file
+  fs.writeFileSync(`${presentationName}.txt`, compactVerticalVignette(data).length + "\n", err => err ? console.error(err) : console.log("append successfull")) // longueur de la solution
 
   // TODO: ne pas utiliser un tableau puisque une seule valeur max stockee dedans
   // TODO: utiliser template literals pour concatenation des orders vignettes
@@ -46,6 +47,7 @@ const writePresentation = (data, presentationName = "presentation") => {
   })
 }
 
+// TODO: remove if pour ternaire
 const compactVerticalVignette = presentation => {
   return presentation.reduce( (acc, vignette) => {
     if (vignette.type === "H") return {vertical: false, result: [...acc.result, vignette.features]}
@@ -63,33 +65,33 @@ const compactVerticalVignette = presentation => {
     // return acc.vertical ?
     // {vertical: acc.vertical, result: [...acc.result, vignette.features]} :
     // {vertical: acc.vertical, result: [...acc.result, vignette.features]}
-  }, {vertical: false, result: []})
+  }, {vertical: false, result: []}).result
 }
 
 
-const evaluatePresentation = data => {
+const scorePresentation = presentation => {
+  return presentation.reduce( (acc, features) => {
+    let intersection = features.filter(x => acc.lastFeatures.includes(x)).length
+    let diff1 = features.filter(x => !acc.lastFeatures.includes(x)).length
+    let diff2 = acc.lastFeatures.filter(x => !features.includes(x)).length
+    // console.log(intersection, diff1, diff2)
+    // console.log(Math.min(intersection, Math.min(diff1, diff2)))
+    return {score: acc.score + Math.min(intersection, Math.min(diff1, diff2)), lastFeatures: features}
+  }, {score: 0, lastFeatures: []}).score
 }
 
-
-let data = getFile("a_example.txt")
+// let data = getFile("a_example.txt")
 // let data = getFile("c_memorable_moments.txt")
+let data = getFile("b_lovely_landscapes.txt")
+// let data = getFile("d_pet_pictures.txt")
+let start = new Date()
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
-let data3 = getNPicture(data, 0.49)
-let linear = linearPresentationHV(data)
-// console.log(linear)
-writePresentation(linear)
-evaluatePresentation(linear)
+let dataPercent = getNPicture(data, 0.3)
+let linear = linearPresentationHV(dataPercent)
+// writePresentation(linear)
+let linearCompact = compactVerticalVignette(linear)
+console.log(scorePresentation(linearCompact))
 
 
-let res = compactVerticalVignette(linear).result
-console.log(res)
-// let arr1 = [1,2,3,4,5];
-// let arr2 = [3,4,5,6];
-// let result = [...new Set([...arr1, ...arr2])];
-
-
-// presentation.reduce( (acc, vignette) => {
-//   {vertical: acc.vertical, result: [...acc.result, vignette.features]},
-//   {vertical: false, result: []})
-// }
+console.log(new Date() - start, "ms runtime")
