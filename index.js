@@ -93,23 +93,23 @@ const gloutonnePresentation = data => {
 
 let start = new Date()
 // DATA :
-let data = getFile("a_example.txt")
-// let data = getFile("c_memorable_moments.txt")
+// let data = getFile("a_example.txt")
+let data = getFile("c_memorable_moments.txt")
 // let data = getFile("b_lovely_landscapes.txt")
 // let data = getFile("d_pet_pictures.txt")
 // let data = getFile("e_shiny_selfies.txt")
 
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
-let dataPercent = getNPicture(data, 1)
+let dataPercent = getNPicture(data, 0.01)
 
 // Linear basic presentation
-// let linear = linearPresentationHV(dataPercent)
+let linear = linearPresentationHV(dataPercent)
 // // writePresentation(linear)
-// let linearCompact = compactVerticalVignette(linear)
-// console.log(scorePresentation(linearCompact))
+let linearCompact = compactVerticalVignette(linear)
+console.log(scorePresentation(linearCompact))
 
 // gloutonnePresentation :
-let gloutonne = gloutonnePresentation(data)
+// let gloutonne = gloutonnePresentation(data)
 
 console.log(new Date() - start, "ms runtime")
