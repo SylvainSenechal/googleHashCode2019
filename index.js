@@ -27,20 +27,20 @@ const linearPresentationHV = data =>
 
 
 const writePresentation = (data, presentationName = "presentation") => {
-  fs.writeFileSync(`${presentationName}.txt`, "", err => err ? console.error(err) : console.log("Clear successfull")) // Clear last file
-  fs.writeFileSync(`${presentationName}.txt`, compactVerticalVignette(data).length + "\n", err => err ? console.error(err) : console.log("append successfull")) // longueur de la solution
+  fs.writeFileSync(`${presentationName}.sol`, "", err => err ? console.error(err) : console.log("Clear successfull")) // Clear last file
+  fs.writeFileSync(`${presentationName}.sol`, compactVerticalVignette(data).length + "\n", err => err ? console.error(err) : console.log("append successfull")) // longueur de la solution
 
   // TODO: ne pas utiliser un tableau puisque une seule valeur max stockee dedans
   // TODO: utiliser template literals pour concatenation des orders vignettes
   let nextVignette = []
   data.forEach( vignette => {
     // Soit on a une vignette horizontale et on l ecrit dans le fichier simplement
-    if (vignette.type === "H") fs.appendFileSync(`${presentationName}.txt`, vignette.order + "\n", err => err ? console.error(err) : console.log("append successfull"))
+    if (vignette.type === "H") fs.appendFileSync(`${presentationName}.sol`, vignette.order + "\n", err => err ? console.error(err) : console.log("append successfull"))
     // Soit on a une double vignette verticale, il faut gerer un stockage si on est sur la premiere, ou si on est sur la deuxieme l ecriture + vider le stockage
     else {
       if (nextVignette.length === 0) nextVignette.push(vignette.order)
       else {
-        fs.appendFileSync(`${presentationName}.txt`, nextVignette[0] + " " + vignette.order + "\n", err => err ? console.error(err) : console.log("append successfull"))
+        fs.appendFileSync(`${presentationName}.sol`, nextVignette[0] + " " + vignette.order + "\n", err => err ? console.error(err) : console.log("append successfull"))
         nextVignette = []
       }
     }
