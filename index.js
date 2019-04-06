@@ -6,7 +6,7 @@ const path = require("path");
 const getFile = name => {
   return fs.readFileSync(path.join(__dirname, 'database/' + name), 'utf-8')
     .split(/\r?\n/) // Separation des lignes
-    .filter(line => line.length > 10) // On vire les lignes qui ne sont pas assez longues pour etre des vignette (ligne 1 et derniere typiquement)
+    .filter(line => line.length > 5) // On vire les lignes qui ne sont pas assez longues pour etre des vignette (ligne 1 et derniere typiquement)
     .map( (line, index) => ({
       type: line.split(' ')[0],
       nbFeatures: line.split(' ')[1],
@@ -94,18 +94,17 @@ const gloutonnePresentation = data => {
 let start = new Date()
 // DATA :
 // let data = getFile("a_example.txt")
-let data = getFile("c_memorable_moments.txt")
+// let data = getFile("c_memorable_moments.txt")
 // let data = getFile("b_lovely_landscapes.txt")
-// let data = getFile("d_pet_pictures.txt")
+let data = getFile("d_pet_pictures.txt")
 // let data = getFile("e_shiny_selfies.txt")
 
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
-let dataPercent = getNPicture(data, 0.01)
-
+let dataPercent = getNPicture(data, 1)
 // Linear basic presentation
 let linear = linearPresentationHV(dataPercent)
-// // writePresentation(linear)
+// writePresentation(linear)
 let linearCompact = compactVerticalVignette(linear)
 console.log(scorePresentation(linearCompact))
 
