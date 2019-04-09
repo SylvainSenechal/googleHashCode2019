@@ -66,6 +66,7 @@ const compactVerticalVignette = presentation => {
 }
 
 const transitionQuality = (slide1, slide2) => {
+  // console.log("s2 : ", slide2.length)
   let intersection = slide1.filter(x => slide2.includes(x)).length
   let diff1 = slide1.filter(x => !slide2.includes(x)).length
   let diff2 = slide2.filter(x => !slide1.includes(x)).length
@@ -135,9 +136,9 @@ let start = new Date()
 
 // DATA :
 // let data = getFile("a_example.txt")
-let data = getFile("c_memorable_moments.txt")
+// let data = getFile("c_memorable_moments.txt")
 // let data = getFile("b_lovely_landscapes.txt")
-// let data = getFile("d_pet_pictures.txt")
+let data = getFile("d_pet_pictures.txt")
 // let data = getFile("e_shiny_selfies.txt")
 let dataV = getVertical(data)
 let dataH = getHorizont(data)
@@ -160,8 +161,8 @@ let dataPercent = getNPicture(data, PERCENTDATA)
 // TODO: voisinage par echange de 2 verticales avec 2 verticales, 1 hori avec 1 hori, ou 1 vert avec 1 vert
 const voisinage = dataPercent => {
   // On commence par creer une solution random
-  // let random = []
-  let random = linearPresentationHV(dataPercent)
+  let random = []
+  // let random = linearPresentationHV(dataPercent)
   let data = [...dataPercent] // Deep copy
   while(data.length > 0) {
     let id = Math.floor(Math.random() * data.length)
@@ -186,18 +187,33 @@ const voisinage = dataPercent => {
   for (let i = 0; i < nbDescentes; i++) {
     console.log("i : ", i)
     loop1:
-    for (let idSwap1 = 0; idSwap1 < randomCompact.length; idSwap1++) {
-      for (let idSwap2 = idSwap1; idSwap2 < randomCompact.length; idSwap2++) {
-        let tmpRandom = [...randomCompact]
-        let tmp = tmpRandom[idSwap1]
-        tmpRandom[idSwap1] = tmpRandom[idSwap2]
-        tmpRandom[idSwap2] = tmp
-        if (scorePresentation(tmpRandom) > score) {
-          score = scorePresentation(tmpRandom)
-          randomCompact = tmpRandom
+    for (let idSwap1 = 1; idSwap1 < randomCompact.length-2; idSwap1++) {
+      console.log("idswap1 : ", idSwap1)
+      for (let idSwap2 = idSwap1; idSwap2 < randomCompact.length-2; idSwap2++) {
+        let score1 = transitionQuality(randomCompact[idSwap1-1], randomCompact[idSwap1]) + transitionQuality(randomCompact[idSwap1], randomCompact[idSwap1+1])
+        score1 += transitionQuality(randomCompact[idSwap2-1], randomCompact[idSwap2]) + transitionQuality(randomCompact[idSwap2], randomCompact[idSwap1+2])
+
+        let score2 = transitionQuality(randomCompact[idSwap1-1], randomCompact[idSwap2]) + transitionQuality(randomCompact[idSwap2], randomCompact[idSwap1+1])
+        score2 += transitionQuality(randomCompact[idSwap2-1], randomCompact[idSwap1]) + transitionQuality(randomCompact[idSwap1], randomCompact[idSwap1+2])
+        
+        if (score2 > score1) {
+          let tmp = randomCompact[idSwap1]
+          randomCompact[idSwap1] = randomCompact[idSwap2]
+          randomCompact[idSwap2] = tmp
+          score = scorePresentation(randomCompact)
           console.log(score)
-          // break loop1
         }
+
+        // let tmpRandom = Array.from(randomCompact)//[...randomCompact]
+        // let tmp = tmpRandom[idSwap1]
+        // tmpRandom[idSwap1] = tmpRandom[idSwap2]
+        // tmpRandom[idSwap2] = tmp
+        // if (scorePresentation(tmpRandom) > score) {
+        //   score = scorePresentation(tmpRandom)
+        //   randomCompact = tmpRandom
+        //   console.log(score)
+        //   // break loop1
+        // }
       }
     }
     // if (random[idSwap1].type == "V") {

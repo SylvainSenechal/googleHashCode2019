@@ -11,3 +11,4 @@ Pour améliorer la vitesse : ne pas recommencer la boucle a chaque iteration mai
 tout le début de la présentation ets bon mais pas la fin, ici on va améliorer l'ensemble de la présentation à chaque itération)
 
 La descente de gradient paraît être une bonne technique cependant vu le type de probleme, voir cone des solutions avec pas trop de local optima ?
+Sans étude, vu qu'une vignette n'a une influence que sur celle d'avant et d'après
