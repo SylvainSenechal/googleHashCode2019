@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from gurobipy import *
 sys.setrecursionlimit(100000)
 
 def read(name):
@@ -85,23 +86,117 @@ def gloutonnePresentation(data, depthSearch = 5):
 #     return presentation
 
 # data = read('a_example.txt')
-data = read('c_memorable_moments.txt')
-# data = read('b_lovely_landscapes.txt')
+# data = read('c_memorable_moments.txt')
+data = read('b_lovely_landscapes.txt')
 # data = read('d_pet_pictures.txt')
 # data = read('e_shiny_selfies.txt')
-dataPercent = getPercent(data, 100)
+dataPercent = getPercent(data, 1)
 dataV = getVertical(data)
 dataH = getHorizont(data)
 
-linear = linearPresentationHV(dataPercent)
-linearCompact = compactVerticalPicture(linear)
-scoreLinear = scorePresentation(linearCompact)
-print(scoreLinear)
+# linear = linearPresentationHV(dataPercent)
+# linearCompact = compactVerticalPicture(linear)
+# scoreLinear = scorePresentation(linearCompact)
+# print(scoreLinear)
+#
+# gloutPresentation = gloutonnePresentation(dataPercent)
+# gloutCompact = compactVerticalPicture(gloutPresentation)
+# scoreGlout = scorePresentation(gloutCompact)
+# print(scoreGlout)
 
-gloutPresentation = gloutonnePresentation(dataPercent)
-gloutCompact = compactVerticalPicture(gloutPresentation)
-scoreGlout = scorePresentation(gloutCompact)
-print(scoreGlout)
+
+##############
+## PARTIE PLNE
+##############
+
+def solve(dataPLNE):
+  # Création du modèle
+  m = Model()
+  # # Calcul de la matrice des distances
+  dist = {(i,j):
+      PLNEtransitionDistance(dataPLNE[i]["features"], dataPLNE[j]["features"])
+      for i in range(n) for j in range(i)}
+
+
+  # Creation des variables binairespour chaque distance
+  vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='e')
+  for i,j in vars.keys():
+      vars[j,i] = vars[i,j] # edge in opposite direction
+
+  # Ajout contrainte chaque vignette a une vignette suivante et precedente
+  m.addConstrs(vars.sum(i,'*') == 2 for i in range(n))
+  # Optimization du modèle
+  m._vars = vars
+  m.Params.lazyConstraints = 1
+  # Utilisation d'un callback avec "lazy constraints" pour ne pas
+  # faire systèmatiquement la vérification de présence de sous-tours
+  m.optimize(subtourelim)
+
+  # Récupération et affichage du résultat
+  vals = m.getAttr('x', vars)
+  selected = tuplelist((i,j) for i,j in vals.keys() if vals[i,j] > 0.5)
+  tour = subtour(selected)
+
+  print('')
+  print('Optimal tour: %s' % str(tour))
+  print('Optimal cost: %g' % m.objVal)
+  print('Qualite de la solution : ', n*100-m.objVal)
+  print('')
+
+  open('resultPLNE.txt', 'w').close() # On clean la derniere solution
+  with open('resultPLNE.txt', 'a') as file:
+    file.write(str(len(tour)) + '\n')
+    for i in range (len(tour)):
+      file.write(str(tour[i]) + '\n')
+  # a = list(set(tour))
+  # print(len(a))
+def PLNEtransitionDistance(slide1, slide2):
+    intersection = len(list(set(slide1) & set(slide2)))
+    diff1 = len(list(set(slide1).difference(set(slide2))))
+    diff2 = len(list(set(slide2).difference(set(slide1))))
+    return 100 - min(intersection, diff1, diff2)
+
+def subtourelim(model, where):
+    if where == GRB.Callback.MIPSOL:
+        # make a list of edges selected in the solution
+        vals = model.cbGetSolution(model._vars)
+        selected = tuplelist((i,j) for i,j in model._vars.keys() if vals[i,j] > 0.5)
+        # find the shortest cycle in the selected edge list
+        tour = subtour(selected)
+        if len(tour) < n:
+            # add subtour elimination constraint for every pair of cities in tour
+            model.cbLazy(quicksum(model._vars[i,j]
+                                  for i,j in itertools.combinations(tour, 2))
+                         <= len(tour)-1)
+
+
+# Given a tuplelist of edges, find the shortest subtour
+
+def subtour(edges):
+  # n : nombre de vignettes <=> nodes
+  #n = len(dataPLNE)
+  unvisited = list(range(n))
+  cycle = range(n+1) # initial length has 1 more city
+  while unvisited: # true if list is non-empty
+    thiscycle = []
+    neighbors = unvisited
+    while neighbors:
+      current = neighbors[0]
+      thiscycle.append(current)
+      unvisited.remove(current)
+      neighbors = [j for i,j in edges.select(current,'*') if j in unvisited]
+    if len(cycle) > len(thiscycle):
+      cycle = thiscycle
+  return cycle
+
+
+dataPLNE = getPercent(read('b_lovely_landscapes.txt'), 0.6)
+n = len(dataPLNE)
+solve(dataPLNE)
+
+
+#### Commentaires pour le dossier
+# Parler du fait qu'on peut prendre dans le sens inverse les features pour b
 
 # Autre gloutonne : Trier par nombre de features decroissants, ajouter une depthSearch
 

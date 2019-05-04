@@ -28,7 +28,7 @@ int main(int argc,char**argv){
   namesol=argv[3];
 
   ifstream fic(nameext.c_str());
-  if (fic==NULL){
+  if (!fic.is_open()){
     cerr<<"file "<<nameext<<" "<<" not found"<<endl;
     return 1;
   }
@@ -41,7 +41,7 @@ int main(int argc,char**argv){
 
   ifstream fic2(namesol.c_str());
   Sol S1(&I,fic2);
-  if (fic2==NULL){
+  if (!fic2.is_open()){
     cerr<<"file "<<namesol<<" "<<" not found"<<endl;
     return 1;
   }
