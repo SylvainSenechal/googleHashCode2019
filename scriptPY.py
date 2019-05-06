@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from gurobipy import *
+# from gurobipy import *
+from collections import Counter
+import matplotlib.pyplot as plt
 sys.setrecursionlimit(100000)
+
+
+###############################################################################################
+## FONCTIONS UTILITAIRES
+###############################################################################################
 
 def read(name):
     with open("database/" + name) as file:
@@ -15,10 +22,9 @@ getPercent = lambda data, percent: data[:int(percent*len(data)/100)]
 getNPicture = lambda data, N: data[:N]
 getVertical = lambda data: filter(lambda picture: picture["type"] == "V", data)
 getHorizont = lambda data: filter(lambda picture: picture["type"] == "H", data)
-linearPresentationHV = lambda data: getHorizont(data) + getVertical(data) if len(getVertical(data)) % 2 == 0 else getHorizont(data) + getVertical(data)[:-1]
 
 
-def compactVerticalPicture(presentation):
+def compactVerticalPicture(presentation): # Fonction qui compacte les images verticales en 1 seule, pour calculer plus facilement le score ensuite
     result = []
     while (len(presentation) > 0):
         if (presentation[0]["type"] == "H"):
@@ -31,16 +37,42 @@ def compactVerticalPicture(presentation):
     return result
 
 
-def transitionQuality(slide1, slide2):
+def transitionQuality(slide1, slide2): # Score d'une transition entre 2 images
     intersection = len(list(set(slide1) & set(slide2)))
     diff1 = len(list(set(slide1).difference(set(slide2))))
     diff2 = len(list(set(slide2).difference(set(slide1))))
     return min(intersection, diff1, diff2)
-def scorePresentation(presentation):
+
+def scorePresentation(presentation): # Score total d'une présentation
     return reduce(lambda acc, features: {"score": acc["score"] + transitionQuality(features, acc["lastFeatures"]), "lastFeatures": features}, presentation, {"score": 0, "lastFeatures": []})["score"]
 
+def statistics(data):
+    features = []
+    for i in range (len(dataPercent)):
+        for j in range (len(dataPercent[i]["features"])):
+            features.append(dataPercent[i]["features"][j])
+    counts = Counter(features)
+    labels, values = zip(*counts.items())
+    labels = list(labels)
+    values = list(values)
+    x = []
+    for i in range (len(labels)):
+        x.append(i)
+    plot = plt.figure()
+    plt.plot(x, values)
+    plot.suptitle("e_shiny_selfies")
+    plt.xlabel('Nombre de features differentes')
+    plt.ylabel('Nombre d occurence de chaque features')
+    plt.show()
+###############################################################################################
+## FONCTIONS ALGORITHMES DIVERS
+###############################################################################################
+
+# Présentation linéaire classique
+linearPresentationHV = lambda data: getHorizont(data) + getVertical(data) if len(getVertical(data)) % 2 == 0 else getHorizont(data) + getVertical(data)[:-1]
+
 # TODO: vertifier que le data pop presentation 0 index retire le bon ou putot faire un filter
-def gloutonnePresentation(data, depthSearch = 5):
+def gloutonnePresentation(data, depthSearch = 10):
     # On choisi arbitrairement une premiere image
     if (len(getHorizont(data)) > 0): # Dans le cas du dataset e_shiny_selfies on a que des Verticales donc on peut pas juste piocher dans les horizontales tout le temps
         presentation = [getHorizont(data)[0]]
@@ -85,29 +117,12 @@ def gloutonnePresentation(data, depthSearch = 5):
 #         data = filter(lambda picture: picture["index"] != bestTransition["index"], data)
 #     return presentation
 
-# data = read('a_example.txt')
-# data = read('c_memorable_moments.txt')
-data = read('b_lovely_landscapes.txt')
-# data = read('d_pet_pictures.txt')
-# data = read('e_shiny_selfies.txt')
-dataPercent = getPercent(data, 1)
-dataV = getVertical(data)
-dataH = getHorizont(data)
-
-# linear = linearPresentationHV(dataPercent)
-# linearCompact = compactVerticalPicture(linear)
-# scoreLinear = scorePresentation(linearCompact)
-# print(scoreLinear)
-#
-# gloutPresentation = gloutonnePresentation(dataPercent)
-# gloutCompact = compactVerticalPicture(gloutPresentation)
-# scoreGlout = scorePresentation(gloutCompact)
-# print(scoreGlout)
 
 
-##############
-## PARTIE PLNE
-##############
+
+###############################################################################################
+## FONCTIONS PARTIE PLNE
+###############################################################################################
 
 def solve(dataPLNE):
   # Création du modèle
@@ -191,14 +206,37 @@ def subtour(edges):
 
 
 dataPLNE = getPercent(read('b_lovely_landscapes.txt'), 0.6)
-n = len(dataPLNE)
-solve(dataPLNE)
 
 
-#### Commentaires pour le dossier
-# Parler du fait qu'on peut prendre dans le sens inverse les features pour b
 
-# Autre gloutonne : Trier par nombre de features decroissants, ajouter une depthSearch
+if __name__=="__main__":
+    ##### RECUPERATION DATA #####
 
-# gerer shiny selfie que verticale .., ne pas initialiser rentrer direct dans while ?
-# faire un histogramme de la repartition des features
+    # data = read('a_example.txt')
+    # data = read('b_lovely_landscapes.txt')
+    data = read('c_memorable_moments.txt')
+    # data = read('d_pet_pictures.txt')
+    # data = read('e_shiny_selfies.txt')
+    dataPercent = getPercent(data, 100)
+    dataV = getVertical(data)
+    dataH = getHorizont(data)
+
+    ##### PARTIE 0 : ANALYSE STATISTIQUES #####
+    # statistics(dataPercent)
+
+    ##### PARTIE 1 : ALGORITHMES DIVERS #####
+
+
+    # linear = linearPresentationHV(dataPercent)
+    # linearCompact = compactVerticalPicture(linear)
+    # scoreLinear = scorePresentation(linearCompact)
+    # print(scoreLinear)
+
+    gloutPresentation = gloutonnePresentation(dataPercent)
+    gloutCompact = compactVerticalPicture(gloutPresentation)
+    scoreGlout = scorePresentation(gloutCompact)
+    print(scoreGlout)
+
+    ##### PÄRTIE 2 : PLNE #####
+    # n = len(dataPLNE)
+    # solve(dataPLNE)
